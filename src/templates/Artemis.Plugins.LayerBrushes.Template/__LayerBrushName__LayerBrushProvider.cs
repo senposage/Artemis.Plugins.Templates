@@ -1,17 +1,39 @@
+using Artemis.Core;
 using Artemis.Core.LayerBrushes;
-using Artemis.UI.Shared.Services.PropertyInput;
-using Artemis.Plugins.LayerBrushes.Template.LayerBrushes;
+using SkiaSharp;
 
-namespace Artemis.Plugins.LayerBrushes.Template;
-
-public class __LayerBrushName__LayerBrushProvider : LayerBrushProvider
+public class ColorWavesBrush : LayerBrush<LayerBrushProperties>
 {
-    public override void Enable()
+    private float waveOffset;
+
+    public ColorWavesBrush()
     {
-        RegisterLayerBrushDescriptor<__LayerBrushName__LayerBrush>("__LayerBrushName__ layer brush", "__LayerBrushName__ layer brush", "QuestionMark");
+        Properties.Speed.DefaultValue = 1.0f;
+        Properties.Direction.DefaultValue = 1;
+        Properties.Reactive.DefaultValue = false;
     }
 
-    public override void Disable()
+    public override void Render(SKCanvas canvas, SKRect bounds, SKPaint paint)
     {
+        float width = bounds.Width;
+        float height = bounds.Height;
+
+        for (int x = 0; x < width; x++)
+        {
+            float hue = ((x + waveOffset) * 10) % 360;
+            paint.Color = SKColor.FromHsv(hue, 100, 100);
+            canvas.DrawRect(x, 0, 1, height, paint);
+        }
+    }
+
+    public override void Update(double deltaTime)
+    {
+        waveOffset += Properties.Speed * Properties.Direction * (float)deltaTime;
+    }
+
+    public override void OnKeyPressed(string key)
+    {
+        if (Properties.Reactive)
+            waveOffset += 5;
     }
 }
